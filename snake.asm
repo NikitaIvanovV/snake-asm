@@ -45,11 +45,6 @@
 	DEF_ESC_SEQ color_%1_seq, 'm', '1', ';', %2, ';', %3
 %endmacro
 
-%macro CLEAR_SCREEN 0
-	PRINT_STR_DATA cur_reset_seq
-	PRINT_STR_DATA clear_seq
-%endmacro
-
 %macro MAP_BUFFER 1
 	%1:
 		times SIZE_X db MAP_WALL ; top wall
@@ -75,9 +70,13 @@
 
 section .data
 
+%assign SCREEN_Y SIZE_Y+2
+%defstr SCREEN_Y_STR SCREEN_Y
+
 ; ANSI escape seqences
-DEF_ESC_SEQ cur_reset_seq, 'H', '0', ';', '0'
-DEF_ESC_SEQ clear_seq, 'J', '2'
+DEF_ESC_SEQ cur_reset_seq, 'A', SCREEN_Y_STR
+DEF_ESC_SEQ cur_home_seq, 'H', '0', ';', '0'
+DEF_ESC_SEQ clear_seq, 'J', '0'
 DEF_ESC_SEQ color_reset_seq, 'm', '0'
 DEF_COLOR_SEQ bright_red, '91', '101'
 DEF_COLOR_SEQ blue, '34', '44'
@@ -267,8 +266,7 @@ draw_map:
 	push rcx
 	push rdx
 
-	CLEAR_SCREEN
-	mov qword [print_buf_len], 0
+	PRINT_BUF_APPEND text_controls
 
 	mov dh, 0 ; x counter
 	mov dl, 0 ; y counter
@@ -303,11 +301,9 @@ draw_map:
 		cmp dl, SIZE_Y
 		jne draw_map_loop_y
 
-	call print_map
+	PRINT_BUF_APPEND text_score
+	call print_term_buf
 
-	PRINT_STR_DATA text_controls
-
-	PRINT_STR_DATA text_score
 	mov rax, [score]
 	call print_num
 	PRINT_NEW_LINE
@@ -318,13 +314,28 @@ draw_map:
 	pop rax
 	ret
 
-print_map:
+clear_screen:
+	push rax
+	push rbx
+	push rcx
+
+	PRINT_BUF_APPEND cur_reset_seq
+	PRINT_BUF_APPEND clear_seq
+
+	pop rcx
+	pop rbx
+	pop rax
+	ret
+
+print_term_buf:
 	push rax
 	push rbx
 
 	mov rax, print_buf
 	mov rbx, [print_buf_len]
 	call print
+
+	mov qword [print_buf_len], 0
 
 	pop rbx
 	pop rax
@@ -471,6 +482,7 @@ update_state:
 		ret
 
 update:
+	call clear_screen
 	call move_snake
 	call draw_map
 
@@ -587,6 +599,9 @@ init:
 	; init snake_cells_buf
 	mov qword [snake_cells_buf], rax
 
+	; init print buffer
+	mov qword [print_buf_len], 0
+
 	call set_noncanon
 
 	pop rbx
@@ -600,11 +615,12 @@ shutdown:
 MAIN:
 	call init
 
+	PRINT_STR_DATA cur_home_seq
 	call draw_map
+
 	call run
 
 	call shutdown
-
 	EXIT 0
 
 ; vim:ft=nasm
