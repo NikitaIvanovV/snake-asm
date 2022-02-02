@@ -2,12 +2,12 @@
 
 %define MAIN _start
 
-%define MOVE_EVERY_TICK 2
-%define SIZE_X 21
-%define SIZE_Y 21
+%define MOVE_EVERY_TICK   2
+%define SIZE_X            21
+%define SIZE_Y            21
 %define EATEN_APPLES_INIT 3
-%define UPD_DEL_SEC     0
-%define UPD_DEL_NANO    50000000
+%define UPD_DEL_SEC       0
+%define UPD_DEL_NANO      50000000
 
 %assign SIZE_N SIZE_X*SIZE_Y
 %assign SNAKE_X_INIT SIZE_X/2
@@ -194,7 +194,7 @@ handle_key:
 		pop rax
 		ret
 
-; warning: does not preserve registers!
+; WARNING: does not preserve registers!
 %macro PRINT_BUF_APPEND 1
 	mov rax, print_buf
 	add rax, [print_buf_len]
@@ -490,7 +490,6 @@ update:
 
 	ret
 
-; populates stack with free cells
 get_free_cells:
 	push rax
 	push rcx

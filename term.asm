@@ -50,6 +50,7 @@ set_canon:
 	push rax
 	push rbx
 
+	; restore from saved termios struct
 	mov rax, stty
 	mov rbx, TCPUTS
 	call term_attr
