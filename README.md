@@ -19,3 +19,11 @@ sudo make install
 ```
 
 Uninstall with `sudo make uninstall`
+
+## Package manager
+
+If you are an Arch Linux user, you can install [`snake-asm`](https://aur.archlinux.org/packages/snake-asm/) AUR package:
+
+```sh
+yay -S snake-asm
+```
