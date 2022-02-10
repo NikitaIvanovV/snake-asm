@@ -1,3 +1,5 @@
+%include "syscall.mac"
+
 %define ICANON 1<1
 %define ECHO   1<3
 %define TCGETS 21505 ; attr to get struct
@@ -20,17 +22,14 @@ global set_noncanon
 global set_canon
 
 set_noncanon:
-	push rax
-	push rbx
-
 	; store old termios
 	mov rax, stty
-	mov rbx, TCGETS
+	mov rdx, TCGETS
 	call term_attr
 
 	; store termios
 	mov rax, tty
-	mov rbx, TCGETS
+	mov rdx, TCGETS
 	call term_attr
 
 	; remove icanon and echo flags
@@ -39,44 +38,31 @@ set_noncanon:
 
 	; set attrs
 	mov rax, tty
-	mov rbx, TCPUTS
+	mov rdx, TCPUTS
 	call term_attr
-
-	pop rbx
-	pop rax
 	ret
 
 set_canon:
-	push rax
-	push rbx
-
 	; restore from saved termios struct
 	mov rax, stty
-	mov rbx, TCPUTS
+	mov rdx, TCPUTS
 	call term_attr
-
-	pop rbx
-	pop rax
 	ret
 
 ; rax - termios struct pointer
-; rbx - TCGETS or TCPUTS
+; rdx - TCGETS or TCPUTS
 term_attr:
-	push rax
 	push rdi
 	push rsi
-	push rdx
 
+	mov rsi, rdx
 	mov rdx, rax
-	mov rsi, rbx
-	mov rax, 16 ; ioctl system call
+	mov rax, SYSCALL_IOCTL
 	mov rdi, 0
 	syscall
 
-	pop rdx
 	pop rsi
 	pop rdi
-	pop rax
 	ret
 
 section .data
@@ -93,15 +79,13 @@ global poll
 
 ; rax: address to save input to
 poll:
-	push rax
 	push rdi
 	push rsi
-	push rdx
 
 	push rax ; save input addr
 
 	; poll event
-	mov rax, 7 ; poll system call
+	mov rax, SYSCALL_POLL
 	mov rdi, spoll ; pointer to struct
 	mov rsi, 1 ; only 1 fd - stdin
 	mov rdx, 0 ; timeout
@@ -113,7 +97,7 @@ poll:
 	jz poll_no_event
 
 	; read input
-	mov rax, 0 ; read system call
+	mov rax, SYSCALL_READ
 	mov rdi, 0 ; stdin fd
 	; rsi: address to store input in
 	mov rdx, 1 ; read one character
@@ -125,10 +109,8 @@ poll:
 		mov byte [rsi], 0
 
 	poll_exit:
-		pop rdx
 		pop rsi
 		pop rdi
-		pop rax
 		ret
 
 ; vim:ft=nasm

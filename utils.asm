@@ -1,45 +1,34 @@
+%include "syscall.mac"
+
 section .text
 
 global memcpy
 global rand
 
 ; rax: destination
-; rbx: source
+; rdx: source
 ; rcx: size
 memcpy:
-	push rcx
-	push rdx
+	dec rcx
 
-	memcpy_loop:
-		dec rcx
+	mov r8, [rdx+rcx]
+	mov [rax+rcx], r8
 
-		mov rdx, [rbx+rcx]
-		mov [rax+rcx], rdx
-
-		cmp rcx, 0
-		jne memcpy_loop
-
-	pop rdx
-	pop rcx
+	cmp rcx, 0
+	jne memcpy
 	ret
 
 ; rax: upper limit
 ; returns: random num in rax
 rand:
-	push rbx
-	push rdx
-
-	mov rbx, rax ; store upper limit
+	mov r12, rax ; store upper limit
 
 	rdrand rax ; store random number
 
 	mov rdx, 0
-	div rbx ; rdx now stores the remainder
+	div r12 ; rdx now stores the remainder
 
 	mov rax, rdx ; ret in rax
-
-	pop rdx
-	pop rbx
 	ret
 
 section .data
@@ -53,20 +42,20 @@ section .text
 global sleep
 
 ; rax: seconds
-; rbx: nanoseconds
+; rdx: nanoseconds
 sleep:
 	push rdi
 	push rsi
 
 	mov qword [sleep_tv_sec], rax
-	mov qword [sleep_tv_usec], rbx
-	mov rax, 35 ; system call nanosleep
+	mov qword [sleep_tv_usec], rdx
+	mov rax, SYSCALL_NANOSLEEP
 	mov rdi, sleep_tv
 	xor rsi, 0
 	syscall
 
 	pop rsi
-	pop rsi
+	pop rdi
 	ret
 
 ; vim:ft=nasm

@@ -8,13 +8,13 @@
 
 %macro PRINT_STR_DATA 1
 	push rax
-	push rbx
+	push rdx
 
 	mov rax, %1
-	mov rbx, %1_len
+	mov rdx, %1_len
 	call print
 
-	pop rbx
+	pop rdx
 	pop rax
 %endmacro
 
