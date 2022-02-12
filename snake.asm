@@ -32,12 +32,6 @@
 %define CELL_TEXT '  '
 %strlen CELL_TEXT_LEN CELL_TEXT
 
-%macro EXIT 1
-	mov rax, SYSCALL_EXIT
-	mov rdi, %1
-	syscall
-%endmacro
-
 %macro DEF_ESC_SEQ 3+
 	DEF_STR_DATA %1, 27, '[', %3, %2
 %endmacro
@@ -124,8 +118,6 @@ section .text
 global MAIN
 
 extern memcpy
-extern poll
-extern sleep
 extern rand
 extern set_noncanon
 extern set_canon
@@ -540,6 +532,8 @@ MAIN:
 	call run
 
 	call shutdown
-	EXIT 0
+
+	mov rax, 0
+	call exit
 
 ; vim:ft=nasm
