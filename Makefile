@@ -10,13 +10,15 @@ SRC := $(wildcard *.asm)
 OBJ := ${SRC:%.asm=${BUILDDIR}/%.o}
 DEP := ${OBJ:.o=.d}
 
+ASFLAGS += -felf64
+
 ${BIN}: ${OBJ}
 	$(LD) -o $@ $^
 
 ${BUILDDIR}/%.o: %.asm
 	@mkdir -p ${@D}
 	@$(AS) -o $@ -M -MF ${@:.o=.d} $<
-	$(AS) -o $@ -felf64 $<
+	$(AS) -o $@ $(ASFLAGS) $<
 
 install:
 	install -d ${BINPREFIX}
