@@ -513,6 +513,9 @@ init:
 	mov qword [print_buf_len], 0
 
 	call set_noncanon
+
+	PRINT_STR_DATA cur_home_seq
+
 	ret
 
 shutdown:
@@ -522,7 +525,6 @@ shutdown:
 MAIN:
 	call init
 
-	PRINT_STR_DATA cur_home_seq
 	call draw_map
 
 	call run

@@ -112,7 +112,7 @@ poll:
 	jmp poll_exit
 
 	poll_no_event:
-		mov byte [rax], 0
+		mov byte [rax], -1
 
 	poll_exit:
 		pop rsi
