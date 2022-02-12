@@ -59,9 +59,6 @@
 	%1 resb SIZE_N*MAX_CELL_PRINT_SIZE
 %endmacro
 
-%macro SET_STATUS 1
-%endmacro
-
 section .data
 
 %assign SCREEN_Y SIZE_Y+2
@@ -121,7 +118,6 @@ extern memcpy
 extern rand
 extern set_noncanon
 extern set_canon
-PRINT_IMPORT
 
 ; rax: x
 ; rdx: y
@@ -140,16 +136,16 @@ handle_key:
 	; old move dir
 	mov al, [move_dir]
 
-	HANDLE_KEY quit, 'q'
+	HANDLE_KEY quit,  'q'
 	HANDLE_KEY right, 'd'
-	HANDLE_KEY down, 's'
-	HANDLE_KEY left, 'a'
-	HANDLE_KEY up, 'w'
+	HANDLE_KEY down,  's'
+	HANDLE_KEY left,  'a'
+	HANDLE_KEY up,    'w'
 
 	jmp handle_key_exit
 
 	handle_key_quit:
-		SET_STATUS STATUS_EXIT
+		mov byte [status], STATUS_EXIT
 		jmp handle_key_exit
 
 	handle_key_right:

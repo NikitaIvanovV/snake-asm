@@ -7,7 +7,7 @@ section .bss
 
 ; termios structs
 stty resb termios_s_size
-tty resb termios_s_size
+tty  resb termios_s_size
 
 section .text
 

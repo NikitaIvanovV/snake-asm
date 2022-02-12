@@ -1,0 +1,21 @@
+%ifndef PRINT_INT_MAC
+%define PRINT_INT_MAC
+
+%macro DEF_STR_DATA 2+
+	%1 db %2
+	%1_len equ $-%1
+%endmacro
+
+%macro PRINT_STR_DATA 1
+	mov rax, %1
+	mov rdx, %1_len
+	call print
+%endmacro
+
+%macro PRINT_NEW_LINE 0
+	PRINT_STR_DATA newline
+%endmacro
+
+%endif
+
+; vim:ft=nasm

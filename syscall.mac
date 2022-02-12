@@ -1,11 +1,7 @@
 %ifndef SYSCALL_MAC
 %define SYSCALL_MAC
 
-struc termios_s
-	resb 12
-	.flags: resb 12 ; flags
-	resb 44
-endstruc
+%include "syscall_int.mac"
 
 extern ioctl
 extern sleep

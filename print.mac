@@ -1,33 +1,12 @@
 %ifndef PRINT_MAC
 %define PRINT_MAC
 
-%macro DEF_STR_DATA 2+
-	%1 db %2
-	%1_len equ $-%1
-%endmacro
+%include "print_int.mac"
 
-%macro PRINT_STR_DATA 1
-	push rax
-	push rdx
-
-	mov rax, %1
-	mov rdx, %1_len
-	call print
-
-	pop rdx
-	pop rax
-%endmacro
-
-%macro PRINT_NEW_LINE 0
-	PRINT_STR_DATA newline
-%endmacro
-
-%macro PRINT_IMPORT 0
-	extern print
-	extern print_num
-	extern newline
-	extern newline_len
-%endmacro
+extern print
+extern print_num
+extern newline
+extern newline_len
 
 %endif
 

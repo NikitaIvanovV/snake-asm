@@ -1,18 +1,25 @@
-%define SYSCALL_READ      0
-%define SYSCALL_WRITE     1
-%define SYSCALL_POLL      7
-%define SYSCALL_IOCTL     16
-%define SYSCALL_NANOSLEEP 35
-%define SYSCALL_EXIT      60
+%include "print.mac"
+%include "syscall_int.mac"
 
-%define STDIN  0
-%define STDOUT 1
+%define SYS_READ      0
+%define SYS_WRITE     1
+%define SYS_POLL      7
+%define SYS_IOCTL     16
+%define SYS_NANOSLEEP 35
+%define SYS_EXIT      60
+
+%macro sys 1
+	mov rax, %1
+	syscall
+	test rax, rax
+	js syscall_err
+%endmacro
 
 section .data
 
 sleep_tv:
-	sleep_tv_sec  dq 0
-	sleep_tv_usec dq 0
+	.sec  dq 0
+	.usec dq 0
 
 section .text
 
@@ -24,12 +31,11 @@ sleep:
 	push rdi
 	push rsi
 
-	mov qword [sleep_tv_sec], rax
-	mov qword [sleep_tv_usec], rdx
-	mov rax, SYSCALL_NANOSLEEP
-	mov rdi, sleep_tv
-	xor rsi, 0
-	syscall
+	mov qword [sleep_tv.sec], rax
+	mov qword [sleep_tv.usec], rdx
+	mov rdi, sleep_tv ; timespec struct
+	mov rsi, 0        ; don't store remaining time
+	sys SYS_NANOSLEEP
 
 	pop rsi
 	pop rdi
@@ -49,9 +55,8 @@ ioctl:
 	add rdx, TCGETS
 	mov rsi, rdx
 	mov rdx, rax
-	mov rax, SYSCALL_IOCTL
 	mov rdi, 0
-	syscall
+	sys SYS_IOCTL
 
 	pop rsi
 	pop rdi
@@ -62,7 +67,7 @@ global exit
 ; rax: exit code
 exit:
 	mov rdi, rax
-	mov rax, SYSCALL_EXIT
+	mov rax, SYS_EXIT
 	syscall
 
 	; this part must never execute,
@@ -89,11 +94,10 @@ poll:
 	push rax ; save input addr
 
 	; poll event
-	mov rax, SYSCALL_POLL
 	mov rdi, poll_fd ; pointer to struct
 	mov rsi, 1       ; only 1 fd - stdin
 	mov rdx, 0       ; timeout
-	syscall
+	sys SYS_POLL
 
 	mov rsi, rax
 	pop rax ; restore input addr
@@ -119,14 +123,14 @@ global write
 
 ; rax: pointer to string
 ; rdx: string length
+; rcx: fd
 write:
 	push rdi
 	push rsi
 
-	mov rsi, rax    ; string pointer
-	mov rax, SYSCALL_WRITE
-	mov rdi, STDOUT ; fd stdout
-	syscall
+	mov rsi, rax ; string pointer
+	mov rdi, rcx ; fd
+	sys SYS_WRITE
 
 	pop rsi
 	pop rdi
@@ -141,12 +145,24 @@ read:
 	push rsi
 
 	mov rsi, rax
-	mov rax, SYSCALL_READ
 	mov rdi, STDIN
-	syscall
+	sys SYS_READ
 
 	pop rsi
 	pop rdi
 	ret
+
+section .data
+
+DEF_STR_DATA text_syscall_err, "System call failed!", 10
+
+section .text
+
+syscall_err:
+	mov rax, text_syscall_err
+	mov rdx, text_syscall_err_len
+	mov rcx, STDERR
+	call write
+	call exit
 
 ; vim:ft=nasm
