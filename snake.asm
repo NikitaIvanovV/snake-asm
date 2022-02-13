@@ -61,7 +61,7 @@
 
 section .data
 
-%assign SCREEN_Y SIZE_Y+2
+%assign SCREEN_Y SIZE_Y+1
 %defstr SCREEN_Y_STR SCREEN_Y
 
 ; ANSI escape seqences
@@ -245,8 +245,6 @@ draw_map:
 	push rbx
 	push r11
 
-	PRINT_BUF_APPEND text_controls
-
 	mov bh, 0  ; x counter
 	mov bl, 0  ; y counter
 	mov r11, 0 ; map cell
@@ -285,7 +283,6 @@ draw_map:
 
 clear_screen:
 	PRINT_BUF_APPEND cur_reset_seq
-	PRINT_BUF_APPEND clear_seq
 	ret
 
 move_snake:
@@ -415,8 +412,8 @@ update_state:
 		ret
 
 update:
-	call clear_screen
 	call move_snake
+	call clear_screen
 	call draw_map
 
 	inc qword [frame]
@@ -514,7 +511,9 @@ init:
 
 	call set_noncanon
 
-	PRINT_STR_DATA cur_home_seq
+	PRINT_BUF_APPEND cur_home_seq
+	PRINT_BUF_APPEND clear_seq
+	PRINT_BUF_APPEND text_controls
 
 	ret
 
