@@ -1,7 +1,7 @@
 %include "syscall.mac"
 
-%define ICANON 1<1
-%define ECHO   1<3
+%define ICANON (1<<1)
+%define ECHO   (1<<3)
 
 section .bss
 
