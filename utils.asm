@@ -19,12 +19,12 @@ memcpy:
 ; rax: upper limit
 ; returns: random num in rax
 rand:
-	mov r12, rax ; store upper limit
+	mov rcx, rax ; store upper limit
 
 	rdrand rax ; store random number
 
 	mov rdx, 0
-	div r12 ; rdx now stores the remainder
+	div rcx ; rdx now stores the remainder
 
 	mov rax, rdx ; ret in rax
 	ret
