@@ -67,6 +67,8 @@ section .data
 ; ANSI escape seqences
 DEF_ESC_SEQ cur_reset_seq, 'A', SCREEN_Y_STR
 DEF_ESC_SEQ cur_home_seq, 'H', '0', ';', '0'
+DEF_ESC_SEQ cur_hide_seq, 'l', '?', '25'
+DEF_ESC_SEQ cur_show_seq, 'h', '?', '25'
 DEF_ESC_SEQ clear_seq, 'J', '0'
 DEF_ESC_SEQ color_reset_seq, 'm', '0'
 DEF_COLOR_SEQ bright_red, '91', '101'
@@ -514,10 +516,12 @@ init:
 	PRINT_BUF_APPEND cur_home_seq
 	PRINT_BUF_APPEND clear_seq
 	PRINT_BUF_APPEND text_controls
+	PRINT_BUF_APPEND cur_hide_seq
 
 	ret
 
 shutdown:
+	PRINT_STR_DATA cur_show_seq
 	call set_canon
 	ret
 
