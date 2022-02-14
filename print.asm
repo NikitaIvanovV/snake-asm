@@ -29,7 +29,7 @@ print_num:
 
 	mov rbx, 10 ; for idiv
 
-	print_num_loop1:
+	.loop_get_chars:
 		mov rdx, 0
 		idiv rbx ; divide [rdx:rax] by rbx
 
@@ -37,16 +37,16 @@ print_num:
 		add byte [rsp], '0' ; add code of 0 to get ASCII char code
 
 		cmp rax, 0
-		jne print_num_loop1
+		jne .loop_get_chars
 
-	print_num_loop2:
+	.loop_print:
 		mov rax, rsp
 		mov rdx, 1
 		call print
 
 		add rsp, 8
 		cmp rsp, rbp
-		jne print_num_loop2
+		jne .loop_print
 
 	mov rsp, rbp
 

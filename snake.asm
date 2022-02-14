@@ -131,7 +131,7 @@ map_coord_to_index:
 
 %macro HANDLE_KEY 2
 	cmp byte [input], %2
-	je handle_key_%1
+	je .%1
 %endmacro
 
 handle_key:
@@ -144,37 +144,37 @@ handle_key:
 	HANDLE_KEY left,  'a'
 	HANDLE_KEY up,    'w'
 
-	jmp handle_key_exit
+	jmp .exit
 
-	handle_key_quit:
+	.quit:
 		mov byte [status], STATUS_EXIT
-		jmp handle_key_exit
+		jmp .exit
 
-	handle_key_right:
+	.right:
 		cmp al, DIR_LEFT
-		je handle_key_exit
+		je .exit
 		mov byte [future_move_dir], DIR_RIGHT
-		jmp handle_key_exit
+		jmp .exit
 
-	handle_key_down:
+	.down:
 		cmp al, DIR_UP
-		je handle_key_exit
+		je .exit
 		mov byte [future_move_dir], DIR_DOWN
-		jmp handle_key_exit
+		jmp .exit
 
-	handle_key_left:
+	.left:
 		cmp al, DIR_RIGHT
-		je handle_key_exit
+		je .exit
 		mov byte [future_move_dir], DIR_LEFT
-		jmp handle_key_exit
+		jmp .exit
 
-	handle_key_up:
+	.up:
 		cmp al, DIR_DOWN
-		je handle_key_exit
+		je .exit
 		mov byte [future_move_dir], DIR_UP
-		jmp handle_key_exit
+		jmp .exit
 
-	handle_key_exit:
+	.exit:
 		ret
 
 %macro PRINT_BUF_APPEND 1
@@ -206,40 +206,40 @@ print_term_buf:
 ; rax: cell
 draw_cell:
 	cmp rax, MAP_WALL
-	je draw_cell_wall
+	je .wall
 
 	cmp rax, MAP_HEAD
-	je draw_cell_head
+	je .head
 
 	cmp rax, MAP_BODY
-	je draw_cell_body
+	je .body
 
 	cmp rax, MAP_APPLE
-	je draw_cell_apple
+	je .apple
 
-	jmp draw_cell_free
+	jmp .free
 
-	draw_cell_free:
+	.free:
 		DRAW_CELL
-		jmp draw_cell_exit
+		jmp .exit
 
-	draw_cell_wall:
+	.wall:
 		DRAW_COLOR_CELL blue
-		jmp draw_cell_exit
+		jmp .exit
 
-	draw_cell_head:
+	.head:
 		DRAW_COLOR_CELL yellow
-		jmp draw_cell_exit
+		jmp .exit
 
-	draw_cell_body:
+	.body:
 		DRAW_COLOR_CELL bright_yellow
-		jmp draw_cell_exit
+		jmp .exit
 
-	draw_cell_apple:
+	.apple:
 		DRAW_COLOR_CELL bright_red
-		jmp draw_cell_exit
+		jmp .exit
 
-	draw_cell_exit:
+	.exit:
 		ret
 
 draw_map:
@@ -250,8 +250,8 @@ draw_map:
 	mov bl, 0  ; y counter
 	mov r11, 0 ; map cell
 
-	draw_map_loop_y:
-		draw_map_loop_x:
+	.loop_y:
+		.loop_x:
 			mov rax, 0
 			mov al, [map+r11]
 			call draw_cell
@@ -260,7 +260,7 @@ draw_map:
 
 			inc bh
 			cmp bh, SIZE_X
-			jne draw_map_loop_x
+			jne .loop_x
 
 		PRINT_BUF_APPEND newline
 
@@ -268,7 +268,7 @@ draw_map:
 
 		inc bl
 		cmp bl, SIZE_Y
-		jne draw_map_loop_y
+		jne .loop_y
 
 	PRINT_BUF_APPEND text_score
 
@@ -291,34 +291,34 @@ move_snake:
 	mov [move_dir], al
 
 	cmp al, DIR_RIGHT
-	je move_snake_rigth
+	je .rigth
 
 	cmp al, DIR_DOWN
-	je move_snake_down
+	je .down
 
 	cmp al, DIR_LEFT
-	je move_snake_left
+	je .left
 
 	cmp al, DIR_UP
-	je move_snake_up
+	je .up
 
-	move_snake_rigth:
+	.rigth:
 		inc qword [snake_x]
-		jmp move_snake_exit
+		jmp .exit
 
-	move_snake_down:
+	.down:
 		inc qword [snake_y]
-		jmp move_snake_exit
+		jmp .exit
 
-	move_snake_left:
+	.left:
 		dec qword [snake_x]
-		jmp move_snake_exit
+		jmp .exit
 
-	move_snake_up:
+	.up:
 		dec qword [snake_y]
-		jmp move_snake_exit
+		jmp .exit
 
-	move_snake_exit:
+	.exit:
 		mov rax, [snake_x]
 		mov rdx, [snake_y]
 		call map_coord_to_index ; rax: map index of old head
@@ -333,10 +333,10 @@ update_map_snake:
 	; save tail position
 	push qword [snake_cells_buf+rcx*8-8]
 
-	update_map_snake_loop:
+	.loop:
 		dec rcx
 		cmp rcx, 0
-		jle update_map_snake_loop_ex
+		jle .loop_exit
 
 		; shift data in the array, so 1st cell becomes 2nd,
 		; 2nd becomes 3rd, etc...
@@ -346,9 +346,9 @@ update_map_snake:
 		; set map cell
 		mov byte [map+rax], MAP_BODY
 
-		jmp update_map_snake_loop
+		jmp .loop
 
-	update_map_snake_loop_ex:
+	.loop_exit:
 		mov rcx, [length]
 
 		mov rax, [snake_x]
@@ -364,21 +364,20 @@ update_map_snake:
 
 		; check if snake needs to grow
 		cmp qword [eaten], 0
-		jg update_map_snake_grow
+		jg .grow
 
 		; free old tail cell
 		mov byte [map+rax], MAP_FREE
-		jmp update_map_snake_exit
+		jmp .exit
 
-	update_map_snake_grow:
+	.grow:
 		mov byte [map+rax], al
 		mov [snake_cells_buf+rcx*8], rax
 
 		dec qword [eaten]
 		inc qword [length]
-		jmp update_map_snake_exit
 
-	update_map_snake_exit:
+	.exit:
 		ret
 
 ; rax: new snake head pos
@@ -386,30 +385,30 @@ update_state:
 	mov dl, [map+rax]
 
 	cmp dl, MAP_WALL
-	je update_state_die
+	je .die
 
 	cmp dl, MAP_HEAD
-	je update_state_die
+	je .die
 
 	cmp dl, MAP_BODY
-	je update_state_die
+	je .die
 
 	cmp dl, MAP_APPLE
-	je update_state_grow
+	je .grow
 
-	jmp update_state_exit
+	jmp .exit
 
-	update_state_die:
+	.die:
 		mov byte [status], STATUS_DIE
-		jmp update_state_exit
+		jmp .exit
 
-	update_state_grow:
+	.grow:
 		inc qword [eaten]
 		inc qword [score]
 		call place_apple
-		jmp update_state_exit
+		jmp .exit
 
-	update_state_exit:
+	.exit:
 		ret
 
 update:
@@ -425,18 +424,18 @@ get_free_cells:
 	mov rcx, 0 ; counter
 	mov [map_free_buf_len], rcx
 
-	get_free_cells_loop:
+	.loop:
 		cmp byte [map+rcx], MAP_FREE
-		jne get_free_cells_loop_inc
+		jne .loop_inc
 
 		mov rax, [map_free_buf_len]
 		mov [map_free_buf+rax*8], rcx
 		inc qword [map_free_buf_len]
 
-	get_free_cells_loop_inc:
+	.loop_inc:
 		inc rcx
 		cmp rcx, SIZE_N
-		jne get_free_cells_loop
+		jne .loop
 
 	ret
 
@@ -447,7 +446,7 @@ place_apple:
 	mov rax, [map_free_buf_len]
 
 	cmp rax, 0
-	je place_apple_exit
+	je .exit
 
 	; stores rand num from 0 to rax in rax
 	call rand
@@ -456,7 +455,7 @@ place_apple:
 
 	mov byte [map+rdx], MAP_APPLE
 
-	place_apple_exit:
+	.exit:
 		ret
 
 run:
@@ -466,13 +465,13 @@ run:
 	call handle_key
 
 	cmp byte [status], STATUS_EXIT
-	je run_exit
+	je .exit
 
 	cmp byte [status], STATUS_DIE
-	je run_die
+	je .die
 
 	cmp qword [update_count], MOVE_EVERY_TICK
-	je run_update
+	je .update
 
 	inc qword [update_count]
 
@@ -482,15 +481,15 @@ run:
 
 	jmp run
 
-	run_update:
+	.update:
 		call update
 		mov qword [update_count], 0
 		jmp run
 
-	run_die:
+	.die:
 		PRINT_STR_DATA text_game_over
 
-	run_exit:
+	.exit:
 		ret
 
 init:

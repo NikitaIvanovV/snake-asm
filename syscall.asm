@@ -103,18 +103,18 @@ poll:
 	pop rax ; restore input addr
 
 	test rsi, rsi ; test if no event
-	jz poll_no_event
+	jz .no_event
 
 	; read input
 	mov rdx, 1
 	call read
 
-	jmp poll_exit
+	jmp .exit
 
-	poll_no_event:
+	.no_event:
 		mov byte [rax], -1
 
-	poll_exit:
+	.exit:
 		pop rsi
 		pop rdi
 		ret
