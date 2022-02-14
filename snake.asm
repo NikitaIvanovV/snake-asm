@@ -25,9 +25,9 @@
 %define MAP_BODY  3
 %define MAP_APPLE 4
 
-%define STATUS_RUNNING 0
-%define STATUS_EXIT    1
-%define STATUS_DIE     2
+%define STATUS_RUN  0
+%define STATUS_EXIT 1
+%define STATUS_DIE  2
 
 %define CELL_TEXT '  '
 %strlen CELL_TEXT_LEN CELL_TEXT
@@ -51,9 +51,9 @@
 		times SIZE_X db MAP_WALL ; bottom wall
 %endmacro
 
-%define ESQ_SEQ_MAX_LEN 10
+%define ESC_SEQ_MAX_LEN 10
 
-%assign MAX_CELL_PRINT_SIZE ESQ_SEQ_MAX_LEN*2+CELL_TEXT_LEN
+%assign MAX_CELL_PRINT_SIZE ESC_SEQ_MAX_LEN*2+CELL_TEXT_LEN
 
 %macro PRINT_BUFFER 1
 	%1 resb SIZE_N*MAX_CELL_PRINT_SIZE
@@ -83,7 +83,7 @@ DEF_STR_DATA text_game_over, "GAME OVER!", 10
 DEF_STR_DATA cell_sym, CELL_TEXT
 
 ; Some global vars
-status db STATUS_RUNNING
+status db STATUS_RUN
 update_count dq 0
 
 MAP_BUFFER map
@@ -177,7 +177,6 @@ handle_key:
 	handle_key_exit:
 		ret
 
-; WARNING: does not preserve registers!
 %macro PRINT_BUF_APPEND 1
 	mov rax, print_buf
 	add rax, [print_buf_len]

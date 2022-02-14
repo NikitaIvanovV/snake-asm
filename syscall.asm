@@ -1,14 +1,14 @@
 %include "print.mac"
 %include "syscall_int.mac"
 
-%define SYS_READ      0
-%define SYS_WRITE     1
-%define SYS_POLL      7
-%define SYS_IOCTL     16
-%define SYS_NANOSLEEP 35
-%define SYS_EXIT      60
+%define READ      0
+%define WRITE     1
+%define POLL      7
+%define IOCTL     16
+%define NANOSLEEP 35
+%define EXIT      60
 
-%macro sys 1
+%macro SYS 1
 	mov rax, %1
 	syscall
 	test rax, rax
@@ -35,7 +35,7 @@ sleep:
 	mov qword [sleep_tv.usec], rdx
 	mov rdi, sleep_tv ; timespec struct
 	mov rsi, 0        ; don't store remaining time
-	sys SYS_NANOSLEEP
+	SYS NANOSLEEP
 
 	pop rsi
 	pop rdi
@@ -56,7 +56,7 @@ ioctl:
 	mov rsi, rdx
 	mov rdx, rax
 	mov rdi, 0
-	sys SYS_IOCTL
+	SYS IOCTL
 
 	pop rsi
 	pop rdi
@@ -67,7 +67,7 @@ global exit
 ; rax: exit code
 exit:
 	mov rdi, rax
-	mov rax, SYS_EXIT
+	mov rax, EXIT
 	syscall
 
 	; this part must never execute,
@@ -97,7 +97,7 @@ poll:
 	mov rdi, poll_fd ; pointer to struct
 	mov rsi, 1       ; only 1 fd - stdin
 	mov rdx, 0       ; timeout
-	sys SYS_POLL
+	SYS POLL
 
 	mov rsi, rax
 	pop rax ; restore input addr
@@ -130,7 +130,7 @@ write:
 
 	mov rsi, rax ; string pointer
 	mov rdi, rcx ; fd
-	sys SYS_WRITE
+	SYS WRITE
 
 	pop rsi
 	pop rdi
@@ -146,7 +146,7 @@ read:
 
 	mov rsi, rax
 	mov rdi, STDIN
-	sys SYS_READ
+	SYS READ
 
 	pop rsi
 	pop rdi

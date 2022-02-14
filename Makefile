@@ -13,7 +13,7 @@ DEP := ${OBJ:.o=.d}
 ASFLAGS += -felf64
 
 ${BIN}: ${OBJ}
-	$(LD) -o $@ $^
+	$(LD) -o $@ $(LDFLAGS) $^
 
 ${BUILDDIR}/%.o: %.asm
 	@mkdir -p ${@D}
