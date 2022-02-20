@@ -7,14 +7,15 @@ global rand
 ; rdx: source
 ; rcx: size
 memcpy:
-	dec rcx
+	mov rsi, rdx
+	mov rdi, rax
 
-	mov r8, [rdx+rcx]
-	mov [rax+rcx], r8
+	cld ; increment in rep
 
-	cmp rcx, 0
-	jne memcpy
-	ret
+	; copy [rsi] to [rdi]
+	; increment rsi and rdi
+	; repeat rcx times
+	rep movsb
 
 ; rax: upper limit
 ; returns: random num in rax
