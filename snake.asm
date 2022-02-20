@@ -84,7 +84,6 @@ DEF_STR_DATA cell_sym, CELL_TEXT
 
 ; Some global vars
 status db STATUS_RUN
-update_count dq 0
 
 MAP_BUFFER map
 
@@ -459,37 +458,44 @@ place_apple:
 		ret
 
 run:
-	mov rax, input
-	call poll
+	push rbx
 
-	call handle_key
+	; update count
+	mov rbx, 0
 
-	cmp byte [status], STATUS_EXIT
-	je .exit
+	.loop:
+		mov rax, input
+		call poll
 
-	cmp byte [status], STATUS_DIE
-	je .die
+		call handle_key
 
-	cmp qword [update_count], MOVE_EVERY_TICK
-	je .update
+		cmp byte [status], STATUS_EXIT
+		je .exit
 
-	inc qword [update_count]
+		cmp byte [status], STATUS_DIE
+		je .die
 
-	mov rax, UPD_DEL_SEC
-	mov rdx, UPD_DEL_NANO
-	call sleep
+		cmp rbx, MOVE_EVERY_TICK
+		je .update
 
-	jmp run
+		inc rbx
+
+		mov rax, UPD_DEL_SEC
+		mov rdx, UPD_DEL_NANO
+		call sleep
+
+		jmp .loop
 
 	.update:
 		call update
-		mov qword [update_count], 0
-		jmp run
+		mov rbx, 0
+		jmp .loop
 
 	.die:
 		PRINT_STR_DATA text_game_over
 
 	.exit:
+		pop rbx
 		ret
 
 init:
