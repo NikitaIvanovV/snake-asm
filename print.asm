@@ -33,8 +33,8 @@ print_num:
 		mov rdx, 0
 		idiv rbx ; divide [rdx:rax] by rbx
 
+		add dl, '0' ; add code of 0 to get ASCII char code
 		push rdx ; save new digit
-		add byte [rsp], '0' ; add code of 0 to get ASCII char code
 
 		cmp rax, 0
 		jne .loop_get_chars
