@@ -290,7 +290,7 @@ move_snake:
 	mov [move_dir], al
 
 	cmp al, DIR_RIGHT
-	je .rigth
+	je .right
 
 	cmp al, DIR_DOWN
 	je .down
@@ -301,7 +301,7 @@ move_snake:
 	cmp al, DIR_UP
 	je .up
 
-	.rigth:
+	.right:
 		inc qword [snake_x]
 		jmp .exit
 
