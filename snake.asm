@@ -365,9 +365,7 @@ update_map_snake:
 		cmp qword [eaten], 0
 		jg .grow
 
-		; free old tail cell if it was not replaced with anything
-		cmp byte [map+rax], MAP_BODY
-		jne .exit
+		; free old tail cell
 		mov byte [map+rax], MAP_FREE
 		jmp .exit
 
