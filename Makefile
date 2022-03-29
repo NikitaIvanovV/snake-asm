@@ -26,7 +26,7 @@ ${BINTAR}: ${BIN}
 
 dist: ${BINTAR}
 
-install:
+install: ${BIN}
 	install -d ${BINPREFIX}
 	install ${BIN} ${BINPREFIX}
 
