@@ -17,6 +17,8 @@ memcpy:
 	; repeat rcx times
 	rep movsb
 
+	ret
+
 ; rax: upper limit
 ; returns: random num in rax
 rand:
