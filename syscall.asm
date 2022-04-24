@@ -86,12 +86,14 @@ section .text
 
 global poll
 
-; rax: address to save input to
+; rax: buffer
+; rdx; count
 poll:
 	push rdi
 	push rsi
 
-	push rax ; save input addr
+	push rax ; save buffer
+	push rdx ; save count
 
 	; poll event
 	mov rdi, poll_fd ; pointer to struct
@@ -100,13 +102,13 @@ poll:
 	SYS POLL
 
 	mov rsi, rax
-	pop rax ; restore input addr
+	pop rdx ; restore count
+	pop rax ; restore buffer
 
 	test rsi, rsi ; test if no event
 	jz .no_event
 
 	; read input
-	mov rdx, 1
 	call read
 
 	jmp .exit
@@ -146,11 +148,26 @@ read:
 
 	mov rsi, rax
 	mov rdi, STDIN
-	SYS READ
 
-	pop rsi
-	pop rdi
-	ret
+	.loop:
+		SYS READ
+
+		; exit if EOF
+		test rax, rax
+		je .exit
+
+		; exit if read as many bytes as requested
+		cmp rax, rdx
+		je .exit
+
+		; read less then requested, repeat syscall
+		sub rdx, rax
+		jmp .loop
+
+	.exit:
+		pop rsi
+		pop rdi
+		ret
 
 section .data
 

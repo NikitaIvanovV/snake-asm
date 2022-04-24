@@ -465,6 +465,7 @@ run:
 
 	.loop:
 		mov rax, input
+		mov rdx, 1
 		call poll
 
 		call handle_key
